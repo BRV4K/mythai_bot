@@ -1,0 +1,33 @@
+* {
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+
+body {
+  height: 100%;
+}
+
+.app-container {
+  padding: 30px;
+  height: 100vh;
+}
+
+.block {
+  border: 3px solid green; /* Изначальный цвет обводки */
+  transition: background-color 0.5s ease, color 0.5s ease;
+  color: green;
+  margin-bottom: 15px;
+  padding: 5px 10px;
+  min-height: 100px;
+}
+
+.block:hover {
+  background-color: green; /* Новый цвет обводки при наведении (например, томатный) */
+  color: white;
+}
+
+.description-text {
+  font-weight: 500;
+  margin: 0;
+}
