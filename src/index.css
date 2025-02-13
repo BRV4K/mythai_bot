@@ -29,6 +29,12 @@ body {
   z-index: -1;
 }
 
+.background_estate {
+  background-image: url("../public/img/background_estate.png");
+  background-size: 100% 100%;
+  z-index: -1;
+}
+
 .app-container {
   padding: 30px;
   height: 100vh;
@@ -41,6 +47,12 @@ body {
   font-size: 40px;
 }
 
+.estate_header {
+  font-family: "Elizabeta Modern", serif;
+  color: #83C246;
+  font-size: 30px;
+}
+
 .footer {
   font-family: "Elizabeta Modern", serif;
   color: #83C246;
@@ -49,8 +61,7 @@ body {
 }
 
 .button {
-  height: 100px;
-  width: 200px;
+  height: 100%;
 }
 
 .bg_button {
@@ -61,5 +72,10 @@ body {
   font-family: "Soyuz Grotesk", serif;
   font-size: 20px;
   left: 5px;
-  width: 70%;
+  bottom: 5px;
+  width: 40%;
+}
+
+.home-btn {
+  background-color: #83C246;
 }
