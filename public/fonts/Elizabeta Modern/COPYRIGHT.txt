@@ -1,0 +1,1 @@
+Copyright (c) Dieter Steffmann (latin) A.Gophmann (cyr.), 1998. All rights reserved.

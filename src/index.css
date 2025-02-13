@@ -8,26 +8,58 @@ body {
   height: 100%;
 }
 
+@font-face {
+  font-family: "Elizabeta Modern";
+  src: local("Elizabeta Modern"),
+  url("../public/fonts/Elizabeta Modern/Elizabeta Modern.ttf") format("truetype");
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: "Soyuz Grotesk";
+  src: local("Soyuz Grotesk"),
+  url("../public/fonts/Soyuz Grotesk/SoyuzGroteskBold.ttf") format("truetype");
+  font-weight: normal;
+}
+
+.background_main {
+  background-image: url("../public/img/background_main.png");
+  background-size: 100% 100%;
+  opacity: 0.15;
+  z-index: -1;
+}
+
 .app-container {
   padding: 30px;
   height: 100vh;
+  z-index: 1;
 }
 
-.block {
-  border: 3px solid green; /* Изначальный цвет обводки */
-  transition: background-color 0.5s ease, color 0.5s ease;
-  color: green;
-  margin-bottom: 15px;
-  padding: 5px 10px;
-  min-height: 100px;
+.header {
+  font-family: "Elizabeta Modern", serif;
+  color: #83C246;
+  font-size: 40px;
 }
 
-.block:hover {
-  background-color: green; /* Новый цвет обводки при наведении (например, томатный) */
-  color: white;
+.footer {
+  font-family: "Elizabeta Modern", serif;
+  color: #83C246;
+  font-size: 20px;
+  text-align: center;
 }
 
-.description-text {
-  font-weight: 500;
-  margin: 0;
+.button {
+  height: 100px;
+  width: 200px;
+}
+
+.bg_button {
+
+}
+
+.button-text {
+  font-family: "Soyuz Grotesk", serif;
+  font-size: 20px;
+  left: 5px;
+  width: 70%;
 }
