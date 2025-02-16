@@ -8,6 +8,8 @@ import TourTaiPage from "./components/TourTaiPage/TourTaiPage.jsx";
 import CardsAndLicensePage from "./components/CardsAndLicensePage/CardsAndLicensePage.jsx";
 import ServicesPage from "./components/ServicesPage/ServicesPage.jsx";
 import ToursAndExcoursionsPage from "./components/ToursAndExcoursionsPage/ToursAndExcoursionsPage.jsx";
+import DisctrictChange from "./components/DistrictChange/DisctrictChange.jsx";
+import EstateCatalog from "./components/EstateCatalog/EstateCatalog.jsx";
 
 function App() {
     return (
@@ -21,6 +23,8 @@ function App() {
                 <Route path="/cards" element={<CardsAndLicensePage />} />
                 <Route path="/services" element={<ServicesPage />} />
                 <Route path="/excursions" element={<ToursAndExcoursionsPage />} />
+                <Route path="/districtChange" element={<DisctrictChange />} />
+                <Route path="/estateCatalog" element={<EstateCatalog />} />
             </Routes>
         </Router>
     );

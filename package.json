@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
+    "@reduxjs/toolkit": "^2.5.1",
     "@telegram-apps/sdk-react": "^3.0.7",
     "@vitejs/plugin-basic-ssl": "^1.2.0",
     "axios": "^1.7.9",
@@ -19,8 +21,11 @@
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.9",
     "react-dom": "^19.0.0",
+    "react-loading": "^2.0.3",
+    "react-redux": "^9.2.0",
     "react-router-dom": "^7.1.5",
-    "telegraf": "^4.16.3"
+    "telegraf": "^4.16.3",
+    "vite-plugin-node-polyfills": "^0.23.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",

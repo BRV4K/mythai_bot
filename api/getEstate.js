@@ -2,19 +2,36 @@ import { parse } from 'csv-parse/sync';
 import axios from 'axios';
 
 async function readPublicSheet() {
-    // Используйте URL для экспорта в формате CSV
     const url = "https://docs.google.com/spreadsheets/d/1jJK6swaj4Ac11LHMzVxIsGVggoqcLJuQAuDfBBOSOoI/export?format=csv&gid=0";
 
     try {
         const response = await axios.get(url);
-        const rows = parse(response.data, {
-            columns: true, // Использовать первую строку как заголовки
-            skip_empty_lines: true, // Пропускать пустые строки
+        return parse(response.data, {
+            columns: true,
+            skip_empty_lines: true,
         });
-        console.log(rows);
     } catch (err) {
         console.error('Ошибка:', err);
+        return []; // Возвращаем пустой массив при ошибке
     }
 }
 
-readPublicSheet();
+export default async function getEstate(orderType, estateType, district) {
+    return [];
+    try {
+        const data = await readPublicSheet();
+        return data.filter(estate =>
+            estate['Тип сделки'] === orderType &&
+            estate['Тип жилья'] === estateType &&
+            estate['Район'] === district
+        );
+    } catch (err) {
+        console.error('Ошибка:', err);
+        return [];
+    }
+}
+
+// Для тестирования нужно использовать async IIFE
+(async () => {
+    console.log(await getEstate('Покупка', 'Вилла', 'Восточное побережье'));
+})();
