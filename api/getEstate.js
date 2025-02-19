@@ -1,20 +1,36 @@
-import { parse } from 'csv-parse/sync';
+import { parse } from 'csv-parse/browser/esm';
 import axios from 'axios';
 
-async function readPublicSheet() {
-    // Используйте URL для экспорта в формате CSV
-    const url = "https://docs.google.com/spreadsheets/d/1jJK6swaj4Ac11LHMzVxIsGVggoqcLJuQAuDfBBOSOoI/export?format=csv&gid=0";
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/10i9gtn0mTkkVtgHqrUaloHRyHchUciJQwwpOGS8o8j4/export?format=csv&gid=0";
 
+async function readPublicSheet() {
     try {
-        const response = await axios.get(url);
-        const rows = parse(response.data, {
-            columns: true, // Использовать первую строку как заголовки
-            skip_empty_lines: true, // Пропускать пустые строки
+        const response = await axios.get(SHEET_URL);
+
+        return await new Promise((resolve, reject) => {
+            parse(response.data, {
+                columns: true,
+                skip_empty_lines: true,
+            }, (err, records) => {
+                if (err) reject(err);
+                else resolve(records);
+            });
         });
-        console.log(rows);
+
     } catch (err) {
         console.error('Ошибка:', err);
+        return [];
     }
 }
 
-readPublicSheet();
+export default async function getCourses() {
+    try {
+        const courses = await readPublicSheet();
+        // Тестовый вывод данных в консоль
+        console.log('Полученные данные курсов:', JSON.parse(JSON.stringify(courses)));
+        return courses;
+    } catch (err) {
+        console.error('Ошибка:', err);
+        return [];
+    }
+}
