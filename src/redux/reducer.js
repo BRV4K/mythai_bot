@@ -7,37 +7,30 @@ export const Storage = createSlice({
             'estateType': "",
             'district': "",
             'orderType': "",
+            'transportType': ""
         }
     },
     reducers: {
         setEstateType: (state, action) => {
             state.storage.estateType = action.payload;
         },
-        clearEstateType: (state) => {
-            state.storage.estateType = "";
-        },
         setDistrict: (state, action) => {
             state.storage.district = action.payload;
-        },
-        clearDistrict: (state) => {
-            state.storage.district = "";
         },
         setOrderType: (state, action) => {
             state.storage.orderType = action.payload;
         },
-        clearOrderType: (state) => {
-            state.storage.orderType = "";
+        setTransportType: (state, action) => {
+            state.storage.transportType = action.payload;
         }
     },
 })
 
 export const {
     setEstateType,
-    clearEstateType,
     setDistrict,
-    clearDistrict,
     setOrderType,
-    clearOrderType
+    setTransportType
 } = Storage.actions;
 
 export default Storage.reducer;

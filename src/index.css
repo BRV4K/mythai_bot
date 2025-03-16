@@ -6,43 +6,121 @@
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* IE/Edge */
   user-select: none; /* Стандартный синтаксис */
+  font-family: "GillSans", serif;
+}
+
+@font-face {
+  font-family: 'GillSans';
+  src: url('../public/fonts/gillsans.eot'); /* IE 9 Compatibility Mode */
+  src: url('../public/fonts/gillsans.eot?#iefix') format('embedded-opentype'), /* IE < 9 */
+  url('../public/fonts/gillsans.woff2') format('woff2'), /* Super Modern Browsers */
+  url('../public/fonts/gillsans.woff') format('woff'), /* Firefox >= 3.6, any other modern browser */
+  url('../public/fonts/gillsans.ttf') format('truetype'), /* Safari, Android, iOS */
+  url('../public/fonts/gillsans.svg#gillsans') format('svg'); /* Chrome < 4, Legacy iOS */
+}
+
+#root {
+  height: 100vh;
+  max-width: 600px;
 }
 
 body {
-  height: 100vh;
-}
-
-@font-face {
-  font-family: "Elizabeta Modern";
-  src: local("Elizabeta Modern"),
-  url("../public/fonts/Elizabeta Modern/Elizabeta Modern.ttf") format("truetype");
-  font-weight: normal;
-}
-
-@font-face {
-  font-family: "Soyuz Grotesk";
-  src: local("Soyuz Grotesk"),
-  url("../public/fonts/Soyuz Grotesk/SoyuzGroteskBold.ttf") format("truetype");
-  font-weight: normal;
+  overflow: hidden;
 }
 
 .background-main {
-  background-image: url("../public/img/background_main.png");
+  background-image: url("../public/img/main_bg.jpg");
   background-size: 100% 100%;
-  opacity: 0.15;
-  z-index: -1;
+  z-index: -2;
 }
 
 .background-estate {
-  background-image: url("../public/img/background_estate.png");
+  background-image: url("../public/img/estate_bg.jpg");
   background-size: 100% 100%;
-  z-index: -1;
+  z-index: -2;
+}
+
+.background-visa {
+  background-image: url("../public/img/visa_bg.png");
+  background-size: 100% 100%;
+  z-index: -2;
+}
+
+.background-visa-variants {
+  background-image: url("../public/img/visa_variants.png");
+  background-size: auto 100%;
+  z-index: -2;
+  filter: blur(5px);
+}
+
+.background-transport {
+  background-image: url("../public/img/transport_bg.png");
+  background-size: auto 100%;
+  z-index: -2;
+  filter: blur(5px);
+}
+
+.background-catalog {
+  background-image: url("../public/img/estate_catalog.png");
+  background-size: 100% 100%;
+  z-index: -2;
+  filter: blur(10px);
+}
+
+.background-money {
+  background-image: url("../public/img/change_money_bg.png");
+  background-size: 100% 100%;
+  z-index: -2;
+  filter: blur(5px);
+}
+
+.background-cards {
+  background-image: url("../public/img/cards_bg.png");
+  background-size: 100% 100%;
+  z-index: -2;
+}
+
+.background-tours {
+  background-image: url("../public/img/tours_bg.png");
+  background-size: cover;
+  z-index: -2;
+}
+
+.background-services {
+  background-image: url("../public/img/services_bg.png");
+  background-size: cover;
+  z-index: -2;
+}
+
+.background-fast-track {
+  background-image: url("../public/img/fast_track_bg.png");
+  background-size: cover;
+  z-index: -2;
+}
+
+.background-border-run {
+  background-image: url("../public/img/border_run.png");
+  background-size: cover;
+  z-index: -2;
+  filter: blur(5px);
+}
+
+.background-bank-cards {
+  background-image: url("../public/img/bank_card_bg.png");
+  background-size: cover;
+  z-index: -2;
+}
+
+.background-driving-license {
+  background-image: url("../public/img/drive_lic_bg.png");
+  background-size: cover;
+  z-index: -2;
 }
 
 .app-container {
   padding: 2vw;
-  height: 100vh;
   z-index: 1;
+  overflow: hidden;
 }
 
 .header-cont {
@@ -50,42 +128,50 @@ body {
 }
 
 .header {
-  font-family: "Elizabeta Modern", serif;
   color: #83C246;
   font-size: 40px;
 }
 
 .estate-header {
-  font-family: "Elizabeta Modern", serif;
   color: #83C246;
   font-size: 30px;
 }
 
 .footer-cont {
-  font-family: "Elizabeta Modern", serif;
   color: #83C246;
   font-size: 20px;
   text-align: center;
   height: 25%;
 }
 
-.buttons-cont {
-  height: 60%;
+.main-btn {
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(124,156,138,0.36) 50%, rgba(0,63,27,0.7) 100%);
+}
+
+.main-btn-cont {
+  overflow: hidden;
+  border-radius: 20px;
+  box-shadow: 0 0 10px 0 rgba(255, 255, 255, 0.76);
+  transition: box-shadow 0.1s ease;
+}
+
+.main-btn-cont:hover {
+  box-shadow: 0 0 5px 0 rgba(255, 255, 255, 1);
 }
 
 .button-text {
-  font-family: "Soyuz Grotesk", serif;
-  font-size: 20px;
-  left: 5px;
-  bottom: 5px;
-  width: 40%;
+  font-size: 16px;
+  font-weight: 100;
+  left: 10px;
+  bottom: 15px;
+  width: 80%;
 }
 
 .district-text {
   font-size: 30px;
   color: #08A5AF;
   transition: color 0.2s ease;
-  font-family: "Soyuz Grotesk", serif;
 }
 
 .district-text:hover {
@@ -102,5 +188,357 @@ body {
 }
 
 .home-btn {
-  background-color: #83C246;
+  background-color: rgba(105, 236, 65, 1);
+  font-size: 10px;
+  width: 100px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  box-shadow: 0 0 1px 0 rgba(255, 255, 255, 1), 0 0 2px 0 rgba(255, 255, 255, 1), 0 0 6px 0 rgba(255, 255, 255, 1), 0 0 12px 0 rgba(255, 255, 255, 1), 0 0 21px 0 rgba(255, 255, 255, 1), 0 0 37px 0 rgba(255, 255, 255, 1), 0 0 44px 0 rgba(23, 44, 18, 1);
+  transition: box-shadow 0.2s ease;
+}
+
+.home-btn:hover {
+  box-shadow: 0 0 10px 0 rgba(255, 255, 255, 1);
+}
+
+.catalog-name {
+  font-size: 10px;
+  overflow: hidden;
+}
+
+.catalog-price {
+  font-size: 10px;
+  color: #83C246;
+}
+
+.catalog-img-cont {
+  height: 120px;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.catalog-header-1 {
+  color: #B1F982;
+  font-size: 26px;
+}
+
+.catalog-header-2 {
+  color: white;
+  font-size: 26px;
+}
+
+.catalog-header-3 {
+  color: rgba(105, 181, 55, 1);
+  font-size: 26px;
+}
+
+.catalog-cards-cont {
+  height: 75vh; /* Оставляем высоту контейнера */
+  overflow-y: auto; /* Прокрутка по вертикали */
+  overflow-x: hidden; /* Без горизонтальной прокрутки */
+  display: grid; /* Используем CSS Grid */
+  grid-template-columns: repeat(2, 1fr); /* Два столбца равной ширины */
+  gap: 10px; /* Отступ между карточками */
+  justify-items: center; /* Центрирование карточек по горизонтали внутри ячеек */
+  align-content: start; /* Карточки начинаются сверху, без растяжения по высоте */
+  padding: 5px; /* Уменьшаем внутренний отступ для компактности */
+}
+
+.catalog-cards-cont::-webkit-scrollbar {
+  width: 0 !important;
+}
+
+.catalog-card {
+  background: linear-gradient(180deg, rgba(18, 83, 130, 0) 0%, rgba(25, 53, 89, 1) 100%);
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  border-radius: 20px;
+  width: 100%; /* Карточка занимает всю ширину ячейки */
+  min-width: 170px;
+  max-width: 220px; /* Максимальная ширина сохраняется */
+  height: 150px; /* Фиксированная высота карточки */
+  display: flex; /* Для внутренней структуры карточки */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-btn-cont-bottom-center {
+  bottom: 40px;
+}
+
+.home-btn-cont-bottom-left {
+  bottom: 40px;
+  left: 40px;
+}
+
+.home-btn-cont-bottom-right {
+  bottom: 40px;
+  right: 40px;
+}
+
+.home-btn-serv-cont-bottom-center {
+  bottom: -110px;
+}
+
+.home-btn-serv-cont-bottom-left {
+  bottom: -110px;
+  left: -30vw;
+}
+
+.home-btn-serv-cont-bottom-right {
+  bottom: -110px;
+  right: -30vw;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);      /* Начальная позиция */
+  }
+  100% {
+    transform: translateX(-100%);  /* Текст уезжает влево на 100% своей ширины */
+  }
+}
+
+/* Настройка размера и центрирования модального окна */
+.modal-90w {
+  max-width: 90vw;
+  max-height: 80vh; /* Максимальная высота 75% от высоты экрана */
+  width: 100%; /* Убеждаемся, что ширина не превышает max-width */
+  margin-left: auto; /* Центрирование по горизонтали */
+  margin-right: auto;
+}
+
+.modal-top-margin {
+  top: 10vh;
+}
+
+/* Эффект размытия для фона под модальным окном */
+.background-container {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+}
+
+.background-container.blurred {
+  filter: blur(5px);
+  transition: filter 0.3s ease;
+}
+
+/* Уточняем стили для Bootstrap */
+.modal {
+  z-index: 1050 !important; /* Выше .modal-backdrop */
+}
+
+.modal-dialog {
+  z-index: 1051 !important; /* Ещё выше, чтобы гарантировать перекрытие */
+  filter: none !important; /* Убеждаемся, что модальное окно не размывается */
+}
+
+/* Стили для модального окна */
+.modal-content.custom-modal-content {
+  background-color: rgba(54, 94, 145, 0.8);
+  border-radius: 20px;
+  border: none;
+  box-shadow: none;
+  position: relative; /* Для позиционирования .contact-btn-container */
+}
+
+.custom-modal-content .modal-title {
+  color: #fff;
+}
+
+.custom-modal-content .modal-body h5,
+.custom-modal-content .modal-body p {
+  color: #fff;
+}
+
+.custom-modal-content .modal-footer {
+  background-color: transparent;
+  border: none;
+}
+
+.carousel-item {
+  border-radius: 20px;
+  height: 200px; /* Фиксированная высота контейнера */
+  overflow: hidden;
+  display: flex; /* Для центрирования изображения */
+  justify-content: center;
+  align-items: center;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Изображение обрезается с сохранением пропорций */
+  object-position: center; /* Центрирование изображения */
+  cursor: pointer; /* Указатель мыши показывает, что изображение кликабельно */
+}
+
+/* Контейнер для кнопки "Связаться" */
+.contact-btn-container {
+  position: absolute;
+  bottom: -60px; /* Выводим кнопку ниже модального окна */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  text-align: center;
+  z-index: 1053; /* Выше .modal-content */
+}
+
+/* Стили для кнопки "Связаться" */
+.contact-btn {
+  background-color: rgba(105, 236, 65, 1);
+  font-size: 18px;
+  padding: 5px 15px;
+  border-radius: 20px;
+  box-shadow: 0 0 1px 0 rgba(255, 255, 255, 1), 0 0 2px 0 rgba(255, 255, 255, 1), 0 0 6px 0 rgba(255, 255, 255, 1), 0 0 12px 0 rgba(255, 255, 255, 1), 0 0 21px 0 rgba(255, 255, 255, 1), 0 0 37px 0 rgba(255, 255, 255, 1), 0 0 44px 0 rgba(23, 44, 18, 1), 0 0 88px 0 rgba(23, 44, 18, 1), 0 0 250px 0 rgba(23, 44, 18, 1), 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+  transition: box-shadow 0.2s ease;
+  display: inline-block; /* Убеждаемся, что кнопка выравнивается правильно */
+}
+
+.contact-btn:hover {
+  box-shadow: 0 0 10px 0 rgba(255, 255, 255, 1);
+}
+
+/* Стили для прокрутки внутри modal-body */
+.modal-body-scrollable {
+  max-height: calc(75vh); /* Учитываем только содержимое, без кнопки */
+  overflow-y: auto; /* Прокрутка по вертикали, если контент превышает высоту */
+  overflow-x: hidden; /* Без горизонтальной прокрутки */
+  padding-bottom: 20px; /* Увеличиваем отступ снизу для дополнительного пространства */
+}
+
+/* Убираем скроллбар */
+.modal-body-scrollable::-webkit-scrollbar {
+  width: 0 !important;
+}
+
+/* Стили для текста описания */
+.description-text {
+  white-space: pre-wrap; /* Сохраняет переносы строк и пробелы */
+  text-align: left; /* Выравнивание по левому краю для читаемости */
+  margin: 0 auto; /* Центрирование блока */
+  max-width: 90%; /* Ограничение ширины для читаемости */
+}
+
+.modal-content {
+  z-index: 1052 !important; /* Выше всех слоёв */
+  background-color: transparent; /* Убираем лишний фон, если он мешает */
+  border: none;
+}
+
+/* Переопределяем стиль .modal-backdrop */
+.modal-backdrop {
+  z-index: 1040 !important; /* Убеждаемся, что он ниже модального окна */
+  background-color: rgba(0, 0, 0, 0.5); /* Затемнение только для фона */
+}
+
+.money-change-1-text {
+  font-size: 16px;
+  width: 85%;
+}
+
+.money-change-2-text {
+  font-size: 22px;
+  width: 85%;
+}
+
+.money-change-3-text {
+  margin-top: 20vh;
+  font-size: 14px;
+}
+
+.money-change-bg-blur {
+  background-color: #3C711A;
+  opacity: 0.6;
+  filter: blur(40px);
+  height: 40px;
+}
+
+.money-change-btn {
+  background-color: #B1F982;
+  border-radius: 20px;
+  padding: 15px 20px;
+  color: #3C711A;
+  line-height: 100%;
+  font-size: 24px;
+  box-shadow: 0 0 1px 0 rgba(255, 255, 255, 1), 0 0 2px 0 rgba(255, 255, 255, 1), 0 0 6px 0 rgba(255, 255, 255, 1), 0 0 12px 0 rgba(255, 255, 255, 1), 0 0 21px 0 rgba(255, 255, 255, 1), 0 0 37px 0 rgba(255, 255, 255, 1), 0 0 44px 0 rgba(23, 44, 18, 1), 0 0 88px 0 rgba(23, 44, 18, 1), 0 0 250px 0 rgba(23, 44, 18, 1), 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+  transition: box-shadow 0.2s ease;
+}
+
+.money-change-btn:hover {
+  box-shadow: 0 0 10px 0 rgba(255, 255, 255, 1);
+}
+
+.arrange-btn {
+  background-color: rgba(105, 236, 65, 1);
+  border-radius: 20px;
+  padding: 10px 30px;
+  color: white;
+  line-height: 100%;
+  font-size: 16px;
+  box-shadow: 0 0 1px 0 rgba(255, 255, 255, 1), 0 0 2px 0 rgba(255, 255, 255, 1), 0 0 6px 0 rgba(255, 255, 255, 1), 0 0 12px 0 rgba(255, 255, 255, 1), 0 0 21px 0 rgba(255, 255, 255, 1), 0 0 37px 0 rgba(255, 255, 255, 1), 0 0 44px 0 rgba(23, 44, 18, 1);
+  transition: box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.arrange-btn:hover {
+  box-shadow: 0 0 10px 0 rgba(255, 255, 255, 1);
+}
+
+.modal-bg {
+  background-color: rgba(54, 94, 145, 0.8);
+  border-radius: 40px;
+  padding: 20px;
+  font-size: 12px;
+  width: 85%;
+}
+
+.arrow {
+  top: 40px;
+}
+
+.modal-h1 {
+  top: -40px;
+  font-size: 20px;
+}
+
+.modal-h1-digital {
+  top: -60px;
+  font-size: 20px;
+}
+
+.close-icon {
+  position: absolute;
+  top: -50px; /* Расположение выше модального окна */
+  right: 0; /* Выравнивание по правому краю */
+  cursor: pointer; /* Указатель мыши при наведении */
+  padding: 10px; /* Увеличивает область клика */
+  z-index: 1054; /* Выше .modal-content и .contact-btn-container */
+}
+
+.digital-visa-header {
+  background-color: rgba(248, 112, 22, 1);
+  box-shadow: 0 0 1px 0 rgba(255, 255, 255, 1), 0 0 2px 0 rgba(255, 255, 255, 1), 0 0 6px 0 rgba(255, 255, 255, 1), 0 0 12px 0 rgba(255, 255, 255, 1);
+  padding: 15px;
+  border-radius: 20px;
+}
+
+.services-name {
+  font-size: 10px;
+}
+
+.blur-background {
+  filter: blur(5px); /* Размытие фона */
+  -webkit-filter: blur(5px); /* Для совместимости с Safari */
+  pointer-events: none; /* Отключаем взаимодействие с размытым фоном */
+  transition: filter 0.3s ease; /* Плавный переход */
+}
+
+.services-bonus {
+  background-color: rgba(236, 145, 65, 1);
+  border-radius: 20px;
+  padding: 5px 10px;
+  font-size: 12px;
 }
