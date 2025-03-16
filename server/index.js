@@ -26,7 +26,6 @@ if (!process.env.BOT_TOKEN) {
 // Логируем переменные окружения для отладки
 console.log('BOT_TOKEN:', process.env.BOT_TOKEN);
 console.log('REACT_APP_URL:', process.env.REACT_APP_URL);
-console.log('VITE_PROXY_URL:', process.env.VITE_PROXY_URL);
 console.log('PORT:', PORT);
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
