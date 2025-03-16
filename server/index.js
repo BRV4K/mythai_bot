@@ -2,10 +2,15 @@ import express from 'express';
 import fetch from 'node-fetch';
 import { Telegraf, Markup } from 'telegraf';
 import dotenv from 'dotenv';
-import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname, join as pathJoin } from 'path';
+
+// Получаем __dirname в ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Загружаем .env
-dotenv.config({ path: '../.env' });
+dotenv.config({ path: pathJoin(__dirname, '..', '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,8 +21,11 @@ if (!process.env.BOT_TOKEN) {
     process.exit(1);
 }
 
-console.log(process.env.BOT_TOKEN);
-console.log(process.env.REACT_APP_URL);
+// Логируем переменные окружения для отладки
+console.log('BOT_TOKEN:', process.env.BOT_TOKEN);
+console.log('REACT_APP_URL:', process.env.REACT_APP_URL);
+console.log('VITE_PROXY_URL:', process.env.VITE_PROXY_URL);
+console.log('PORT:', PORT);
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const REACT_APP_URL = process.env.REACT_APP_URL || 'https://example.ru'; // Значение по умолчанию
@@ -53,6 +61,7 @@ bot.on('web_app_data', (ctx) => {
 app.get('/yandex-proxy', async (req, res) => {
     try {
         const yandexUrl = req.query.url;
+        console.log('Прокси-запрос для URL:', yandexUrl);
 
         // Загружаем изображение с Яндекс.Диска
         const response = await fetch(yandexUrl, {
@@ -65,26 +74,47 @@ app.get('/yandex-proxy', async (req, res) => {
         res.set('Content-Type', response.headers.get('Content-Type'));
         response.body.pipe(res);
     } catch (error) {
+        console.error('Ошибка в /yandex-proxy:', error);
         res.status(500).send('Ошибка загрузки изображения');
     }
 });
 
-// Обслуживание статических файлов React
-const __dirname = path.resolve();
-app.use(express.static(path.join(__dirname, 'build')));
-
-// Обработка всех остальных маршрутов через index.html React
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+// Эндпоинт для Webhook Telegram
+app.post('/bot', (req, res) => {
+    console.log('Получен запрос от Telegram на /bot');
+    bot.handleUpdate(req.body);
+    res.sendStatus(200);
 });
 
-// Запуск сервера и бота
-app.listen(PORT, () => {
+// Обслуживание статических файлов (используем dist вместо build)
+app.use(express.static(pathJoin(__dirname, '..', 'dist')));
+
+// Обработка всех остальных маршрутов через index.html
+app.get('*', (req, res) => {
+    console.log('Запрос на фронтенд:', req.url);
+    res.sendFile(pathJoin(__dirname, '..', 'dist', 'index.html'));
+});
+
+// Запуск сервера и установка Webhook
+app.listen(PORT, async () => {
     console.log(`Сервер запущен на порту ${PORT}`);
-    // bot.launch();
-    // console.log('Бот запущен в режиме long polling');
+    const webhookUrl = `https://mythaicomp.ru/bot`;
+    try {
+        await bot.telegram.setWebhook(webhookUrl);
+        console.log(`Webhook установлен: ${webhookUrl}`);
+        const webhookInfo = await bot.telegram.getWebhookInfo();
+        console.log('Текущий Webhook:', webhookInfo);
+    } catch (error) {
+        console.error('Ошибка установки Webhook:', error);
+    }
 });
 
 // Обработка ошибок и завершения
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+process.once('SIGINT', () => {
+    console.log('Получен сигнал SIGINT, останавливаем бота');
+    bot.stop('SIGINT');
+});
+process.once('SIGTERM', () => {
+    console.log('Получен сигнал SIGTERM, останавливаем бота');
+    bot.stop('SIGTERM');
+});
