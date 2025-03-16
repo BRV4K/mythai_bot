@@ -5,15 +5,17 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join as pathJoin } from 'path';
 
+//лежит на Render
+
 // Получаем __dirname в ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Загружаем .env
-dotenv.config({ path: pathJoin(__dirname, '..', '.env') });
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000; // Render задаст порт через PORT
 
 // Проверяем, что BOT_TOKEN существует
 if (!process.env.BOT_TOKEN) {
@@ -28,7 +30,7 @@ console.log('VITE_PROXY_URL:', process.env.VITE_PROXY_URL);
 console.log('PORT:', PORT);
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
-const REACT_APP_URL = process.env.REACT_APP_URL || 'https://example.ru'; // Значение по умолчанию
+const BACKEND_URL = process.env.RENDER_EXTERNAL_URL || 'https://your-app.onrender.com'; // URL Render для API и Webhook
 
 // Middleware для обработки JSON и URL-encoded данных
 app.use(express.json());
@@ -44,7 +46,7 @@ bot.start(async (ctx) => {
             `Привет, @${username}! Добро пожаловать! Я помогу тебе сделать твой отпуск в Тайланде ещё лучше и проще!`
         );
         ctx.reply('Откройте приложение:', Markup.inlineKeyboard([
-            Markup.button.webApp('🚀 Запустить приложение', REACT_APP_URL),
+            Markup.button.webApp('🚀 Запустить приложение', process.env.REACT_APP_URL || 'https://mythaicomp.ru'),
         ]));
     } catch (error) {
         console.error('Ошибка в /start:', error);
@@ -63,14 +65,12 @@ app.get('/yandex-proxy', async (req, res) => {
         const yandexUrl = req.query.url;
         console.log('Прокси-запрос для URL:', yandexUrl);
 
-        // Загружаем изображение с Яндекс.Диска
         const response = await fetch(yandexUrl, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
             },
         });
 
-        // Пересылаем заголовки и данные
         res.set('Content-Type', response.headers.get('Content-Type'));
         response.body.pipe(res);
     } catch (error) {
@@ -86,28 +86,21 @@ app.post('/bot', (req, res) => {
     res.sendStatus(200);
 });
 
-// Обслуживание статических файлов (используем dist вместо build)
-app.use(express.static(pathJoin(__dirname, '..', 'dist')));
-
-// Обработка всех остальных маршрутов через index.html
-app.get('*', (req, res) => {
-    console.log('Запрос на фронтенд:', req.url);
-    res.sendFile(pathJoin(__dirname, '..', 'dist', 'index.html'));
-});
-
 // Запуск сервера и установка Webhook
-app.listen(PORT, async () => {
-    console.log(`Сервер запущен на порту ${PORT}`);
-    const webhookUrl = `https://mythaicomp.ru/bot`;
-    try {
-        await bot.telegram.setWebhook(webhookUrl);
-        console.log(`Webhook установлен: ${webhookUrl}`);
-        const webhookInfo = await bot.telegram.getWebhookInfo();
-        console.log('Текущий Webhook:', webhookInfo);
-    } catch (error) {
-        console.error('Ошибка установки Webhook:', error);
-    }
-});
+const startServer = async () => {
+    app.listen(PORT, async () => {
+        console.log(`Сервер запущен на порту ${PORT}`);
+        const webhookUrl = `${BACKEND_URL}/bot`; // Используем URL Render для Webhook
+        try {
+            await bot.telegram.setWebhook(webhookUrl);
+            console.log(`Webhook установлен: ${webhookUrl}`);
+            const webhookInfo = await bot.telegram.getWebhookInfo();
+            console.log('Текущий Webhook:', webhookInfo);
+        } catch (error) {
+            console.error('Ошибка установки Webhook:', error);
+        }
+    });
+};
 
 // Обработка ошибок и завершения
 process.once('SIGINT', () => {
@@ -117,4 +110,9 @@ process.once('SIGINT', () => {
 process.once('SIGTERM', () => {
     console.log('Получен сигнал SIGTERM, останавливаем бота');
     bot.stop('SIGTERM');
+});
+
+// Запуск сервера
+startServer().catch((err) => {
+    console.error('Ошибка при запуске сервера:', err);
 });
