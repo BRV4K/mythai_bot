@@ -15,7 +15,6 @@ if (!process.env.BOT_TOKEN) {
 
 console.log('BOT_TOKEN:', process.env.BOT_TOKEN);
 console.log('REACT_APP_URL:', process.env.REACT_APP_URL);
-console.log('VITE_PROXY_URL:', process.env.VITE_PROXY_URL);
 console.log('PORT:', PORT);
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
@@ -47,6 +46,9 @@ bot.on('web_app_data', (ctx) => {
 app.get('/yandex-proxy', async (req, res) => {
     try {
         const yandexUrl = req.query.url;
+        if (!yandexUrl) {
+            return res.status(400).send('Ошибка: параметр url не указан');
+        }
         console.log('Прокси-запрос для URL:', yandexUrl);
 
         const response = await fetch(yandexUrl, {
@@ -55,11 +57,15 @@ app.get('/yandex-proxy', async (req, res) => {
             },
         });
 
+        if (!response.ok) {
+            throw new Error(`Ответ от Яндекса: ${response.status} ${response.statusText}`);
+        }
+
         res.set('Content-Type', response.headers.get('Content-Type'));
         response.body.pipe(res);
     } catch (error) {
         console.error('Ошибка в /yandex-proxy:', error);
-        res.status(500).send('Ошибка загрузки изображения');
+        res.status(500).send(`Ошибка загрузки изображения: ${error.message}`);
     }
 });
 

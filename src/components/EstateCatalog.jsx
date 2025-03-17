@@ -5,18 +5,23 @@ import { useSelector } from "react-redux";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import * as bootstrap from 'bootstrap';
 
-// Добавим стили для спиннера
+// Добавляем стили для центрирования спиннера
 const styles = `
-  .spinner {
-    border: 4px solid rgba(255, 255, 255, 0.3);
-    border-top: 4px solid #fff;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto;
+  .carousel-item {
+    position: relative;
+    height: 300px; /* Фиксированная высота для карусели, можно изменить */
   }
-
+  .image-spinner-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3); /* Легкий фон для видимости спиннера */
+  }
   .image-spinner {
     border: 3px solid rgba(255, 255, 255, 0.3);
     border-top: 3px solid #fff;
@@ -24,23 +29,19 @@ const styles = `
     width: 30px;
     height: 30px;
     animation: spin 1s linear infinite;
-    margin: 0 auto;
   }
-
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
-
-  .no-variants {
-    color: #fff;
-    font-size: 1.2rem;
-    text-align: center;
-    margin-top: 20px;
+  .carousel-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Чтобы изображение заполняло контейнер */
   }
 `;
 
-// Добавим стиль в документ
+// Вставляем стили в документ
 const styleSheet = document.createElement("style");
 styleSheet.type = "text/css";
 styleSheet.innerText = styles;
@@ -51,8 +52,8 @@ export default function EstateCatalog() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedEstate, setSelectedEstate] = useState(null);
-    const [imageLoading, setImageLoading] = useState({}); // Состояние для загрузки изображений
-    const [imageErrors, setImageErrors] = useState({}); // Состояние для ошибок загрузки изображений
+    const [imageLoading, setImageLoading] = useState({}); // Состояние загрузки для каждого изображения
+    const [imageErrors, setImageErrors] = useState({}); // Состояние ошибок для каждого изображения
     const modalRef = useRef(null);
 
     const district = useSelector((state) => state.Storage.storage.district || 'Неизвестный район');
@@ -75,23 +76,28 @@ export default function EstateCatalog() {
 
     useEffect(() => {
         if (modalRef.current) {
-            const modal = new bootstrap.Modal(modalRef.current, {
-                keyboard: false
-            });
+            const modal = new bootstrap.Modal(modalRef.current, { keyboard: false });
 
             modalRef.current.addEventListener('hidden.bs.modal', () => {
                 setSelectedEstate(null);
+                setImageLoading({}); // Сбрасываем состояние загрузки при закрытии модального окна
+                setImageErrors({}); // Сбрасываем ошибки
             });
 
-            return () => {
-                modal.dispose();
-            };
+            return () => modal.dispose();
         }
     }, []);
 
     const handleCardClick = (estate) => {
         setSelectedEstate(estate);
         const modal = bootstrap.Modal.getOrCreateInstance(modalRef.current);
+        // Инициализируем состояние загрузки для всех фото выбранного объекта
+        const photos = getPhotos(estate);
+        const initialLoading = photos.reduce((acc, photo) => {
+            acc[photo] = true; // Устанавливаем загрузку для каждого изображения
+            return acc;
+        }, {});
+        setImageLoading(initialLoading);
         modal.show();
     };
 
@@ -125,10 +131,7 @@ export default function EstateCatalog() {
     const handleClick = () => {
         const encodedText = encodeURIComponent(`Здравствуйте! Меня заинтересовало данное объявление: ${orderType} ${renameEstate[estateType] || estateType} ${selectedEstate['Название']} В ${district}`);
         const url = `https://t.me/MyThaiCompany?text=${encodedText}`;
-
-        window.Telegram?.WebApp
-            ? window.Telegram.WebApp.openTelegramLink(url)
-            : window.open(url, '_blank');
+        window.Telegram?.WebApp ? window.Telegram.WebApp.openTelegramLink(url) : window.open(url, '_blank');
     };
 
     const handleImageClick = (photoUrl) => {
@@ -136,33 +139,28 @@ export default function EstateCatalog() {
         img.src = photoUrl;
         const fullscreenDiv = document.createElement('div');
         fullscreenDiv.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            cursor: pointer;
-        `;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      cursor: pointer;
+    `;
         fullscreenDiv.appendChild(img);
         img.style.cssText = `
-            max-width: 90%;
-            max-height: 90%;
-            object-fit: contain;
-        `;
-
-        fullscreenDiv.onclick = () => {
-            document.body.removeChild(fullscreenDiv);
-        };
-
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+    `;
+        fullscreenDiv.onclick = () => document.body.removeChild(fullscreenDiv);
         document.body.appendChild(fullscreenDiv);
     };
 
-    // Функция для фильтрации данных
     const filteredData = data.filter((estate) => {
         const apiDistrict = estate['Район'];
         const apiEstateType = estate['Тип недвижимости'];
@@ -262,25 +260,30 @@ export default function EstateCatalog() {
                                 <div className="modal-body modal-body-scrollable text-center">
                                     <div id="estate-carousel" className="carousel slide">
                                         <div className="carousel-inner">
-                                            {getPhotos(selectedEstate).map((photo, index) => (
-                                                <div className={`carousel-item ${index === 0 ? 'active' : ''}`} key={index}>
-                                                    {imageLoading[photo] !== false && !imageErrors[photo] ? (
-                                                        <div className="image-spinner"></div>
-                                                    ) : imageErrors[photo] ? null : (
-                                                        <img
-                                                            src={`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${photo}`}
-                                                            className="d-block w-100 carousel-image"
-                                                            alt={`Фото ${index + 1}`}
-                                                            onClick={() => handleImageClick(`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${photo}`)}
-                                                            onLoad={() => setImageLoading((prev) => ({ ...prev, [photo]: false }))}
-                                                            onError={() => {
-                                                                setImageLoading((prev) => ({ ...prev, [photo]: false }));
-                                                                setImageErrors((prev) => ({ ...prev, [photo]: true }));
-                                                            }}
-                                                        />
-                                                    )}
-                                                </div>
-                                            ))}
+                                            {getPhotos(selectedEstate).map((photo, index) => {
+                                                const photoUrl = `${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${photo}`;
+                                                return (
+                                                    <div className={`carousel-item ${index === 0 ? 'active' : ''}`} key={index}>
+                                                        {imageLoading[photo] === true ? ( // Проверяем состояние загрузки для конкретного фото
+                                                            <div className="image-spinner-container">
+                                                                <div className="image-spinner"></div>
+                                                            </div>
+                                                        ) : imageErrors[photo] ? null : (
+                                                            <img
+                                                                src={photoUrl}
+                                                                className="d-block w-100 carousel-image"
+                                                                alt={`Фото ${index + 1}`}
+                                                                onClick={() => handleImageClick(photoUrl)}
+                                                                onLoad={() => setImageLoading((prev) => ({ ...prev, [photo]: false }))}
+                                                                onError={() => {
+                                                                    setImageLoading((prev) => ({ ...prev, [photo]: false }));
+                                                                    setImageErrors((prev) => ({ ...prev, [photo]: true }));
+                                                                }}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                         <button
                                             className="carousel-control-prev"

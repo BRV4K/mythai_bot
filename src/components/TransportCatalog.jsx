@@ -7,13 +7,55 @@ import getMoto from "../../api/getMoto.js";
 import getCars from "../../api/getCars.js";
 import getBikes from "../../api/getBikes.js";
 
+// Стили для карусели и спиннера
+const styles = `
+  .carousel-item {
+    position: relative;
+    height: 300px; /* Можно настроить высоту */
+  }
+  .image-spinner-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+  }
+  .image-spinner {
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid #fff;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .carousel-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+// Добавляем стили в документ
+const styleSheet = document.createElement("style");
+styleSheet.type = "text/css";
+styleSheet.innerText = styles;
+document.head.appendChild(styleSheet);
+
 export default function TransportCatalog() {
     const [data, setData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedTransport, setSelectedTransport] = useState(null);
-    const [imageLoading, setImageLoading] = useState({}); // Состояние для загрузки изображений
-    const [imageErrors, setImageErrors] = useState({}); // Состояние для ошибок загрузки изображений
+    const [imageLoading, setImageLoading] = useState({}); // Состояние загрузки изображений
+    const [imageErrors, setImageErrors] = useState({}); // Состояние ошибок изображений
     const modalRef = useRef(null);
 
     const orderType = useSelector((state) => state.Storage.storage.orderType || 'Неизвестно');
@@ -30,8 +72,6 @@ export default function TransportCatalog() {
                 } else if (transportType === 'Байк') {
                     response = await getBikes();
                 }
-                console.log('API Response:', response);
-
                 const transportData = Array.isArray(response) ? response : (response.data || response.results || []);
                 setData(transportData);
             } catch (err) {
@@ -45,23 +85,25 @@ export default function TransportCatalog() {
 
     useEffect(() => {
         if (modalRef.current) {
-            const modal = new bootstrap.Modal(modalRef.current, {
-                keyboard: false
-            });
-
+            const modal = new bootstrap.Modal(modalRef.current, { keyboard: false });
             modalRef.current.addEventListener('hidden.bs.modal', () => {
                 setSelectedTransport(null);
+                setImageLoading({});
+                setImageErrors({});
             });
-
-            return () => {
-                modal.dispose();
-            };
+            return () => modal.dispose();
         }
     }, []);
 
     const handleCardClick = (transport) => {
         setSelectedTransport(transport);
         const modal = bootstrap.Modal.getOrCreateInstance(modalRef.current);
+        const photos = getPhotos(transport);
+        const initialLoading = photos.reduce((acc, photo) => {
+            acc[photo] = true; // Устанавливаем true для всех фото
+            return acc;
+        }, {});
+        setImageLoading(initialLoading);
         modal.show();
     };
 
@@ -88,10 +130,7 @@ export default function TransportCatalog() {
     const handleClick = () => {
         const encodedText = encodeURIComponent(`Здравствуйте! Меня заинтересовало данное объявление: ${orderType} ${transportType} ${selectedTransport['Название']}`);
         const url = `https://t.me/MyThaiCompany?text=${encodedText}`;
-
-        window.Telegram?.WebApp
-            ? window.Telegram.WebApp.openTelegramLink(url)
-            : window.open(url, '_blank');
+        window.Telegram?.WebApp ? window.Telegram.WebApp.openTelegramLink(url) : window.open(url, '_blank');
     };
 
     const handleImageClick = (photoUrl) => {
@@ -99,33 +138,16 @@ export default function TransportCatalog() {
         img.src = photoUrl;
         const fullscreenDiv = document.createElement('div');
         fullscreenDiv.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            cursor: pointer;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(0, 0, 0, 0.9); display: flex;
+            justify-content: center; align-items: center; z-index: 2000; cursor: pointer;
         `;
         fullscreenDiv.appendChild(img);
-        img.style.cssText = `
-            max-width: 90%;
-            max-height: 90%;
-            object-fit: contain;
-        `;
-
-        fullscreenDiv.onclick = () => {
-            document.body.removeChild(fullscreenDiv);
-        };
-
+        img.style.cssText = `max-width: 90%; max-height: 90%; object-fit: contain;`;
+        fullscreenDiv.onclick = () => document.body.removeChild(fullscreenDiv);
         document.body.appendChild(fullscreenDiv);
     };
 
-    // Фильтрация данных
     const filteredData = data.filter((transport) => {
         const apiOrderType = transport['Тип сделки'];
         return apiOrderType === renameTransaction[orderType];
@@ -146,22 +168,15 @@ export default function TransportCatalog() {
                     ) : error ? (
                         <div className="w-100 h-100 d-flex justify-content-center align-items-center text-danger">{error}</div>
                     ) : filteredData.length === 0 ? (
-                        <div className="no-variants">
-                            НЕТ ПОДХОДЯЩИХ ВАРИАНТОВ
-                        </div>
+                        <div className="no-variants">НЕТ ПОДХОДЯЩИХ ВАРИАНТОВ</div>
                     ) : (
                         <div className="catalog-cards-cont">
                             {filteredData.map((transport, key) => {
                                 const imgUrl = transport['Фото 1'];
                                 const name = transport['Название'];
                                 const price = transport['Цена'];
-
                                 return (
-                                    <div
-                                        key={key}
-                                        onClick={() => handleCardClick(transport)}
-                                        className="catalog-card cursor-pointer"
-                                    >
+                                    <div key={key} onClick={() => handleCardClick(transport)} className="catalog-card cursor-pointer">
                                         <div className="catalog-img-cont d-flex align-items-center w-100">
                                             {imageLoading[imgUrl] !== false && !imageErrors[imgUrl] ? (
                                                 <div className="image-spinner"></div>
@@ -202,15 +217,7 @@ export default function TransportCatalog() {
                 </div>
             </div>
 
-            <div
-                className="modal fade"
-                id="transportModal"
-                ref={modalRef}
-                tabIndex="-1"
-                aria-labelledby="transportModalLabel"
-                aria-hidden="true"
-                data-bs-keyboard="false"
-            >
+            <div className="modal fade" id="transportModal" ref={modalRef} tabIndex="-1" aria-labelledby="transportModalLabel" aria-hidden="true" data-bs-keyboard="false">
                 <div className="modal-dialog modal-90w modal-dialog-centered mx-auto">
                     <div className="modal-content custom-modal-content position-relative">
                         {selectedTransport && (
@@ -218,41 +225,36 @@ export default function TransportCatalog() {
                                 <div className="modal-body modal-body-scrollable text-center">
                                     <div id="transport-carousel" className="carousel slide">
                                         <div className="carousel-inner">
-                                            {getPhotos(selectedTransport).map((photo, index) => (
-                                                <div className={`carousel-item ${index === 0 ? 'active' : ''}`} key={index}>
-                                                    {imageLoading[photo] !== false && !imageErrors[photo] ? (
-                                                        <div className="image-spinner"></div>
-                                                    ) : imageErrors[photo] ? null : (
-                                                        <img
-                                                            src={`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${photo}`}
-                                                            className="d-block w-100 carousel-image"
-                                                            alt={`Фото ${index + 1}`}
-                                                            onClick={() => handleImageClick(`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${photo}`)}
-                                                            onLoad={() => setImageLoading((prev) => ({ ...prev, [photo]: false }))}
-                                                            onError={() => {
-                                                                setImageLoading((prev) => ({ ...prev, [photo]: false }));
-                                                                setImageErrors((prev) => ({ ...prev, [photo]: true }));
-                                                            }}
-                                                        />
-                                                    )}
-                                                </div>
-                                            ))}
+                                            {getPhotos(selectedTransport).map((photo, index) => {
+                                                const photoUrl = `${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${photo}`;
+                                                return (
+                                                    <div className={`carousel-item ${index === 0 ? 'active' : ''}`} key={index}>
+                                                        {imageLoading[photo] === true ? (
+                                                            <div className="image-spinner-container">
+                                                                <div className="image-spinner"></div>
+                                                            </div>
+                                                        ) : imageErrors[photo] ? null : (
+                                                            <img
+                                                                src={photoUrl}
+                                                                className="d-block w-100 carousel-image"
+                                                                alt={`Фото ${index + 1}`}
+                                                                onClick={() => handleImageClick(photoUrl)}
+                                                                onLoad={() => setImageLoading((prev) => ({ ...prev, [photo]: false }))}
+                                                                onError={() => {
+                                                                    setImageLoading((prev) => ({ ...prev, [photo]: false }));
+                                                                    setImageErrors((prev) => ({ ...prev, [photo]: true }));
+                                                                }}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
-                                        <button
-                                            className="carousel-control-prev"
-                                            type="button"
-                                            data-bs-target="#transport-carousel"
-                                            data-bs-slide="prev"
-                                        >
+                                        <button className="carousel-control-prev" type="button" data-bs-target="#transport-carousel" data-bs-slide="prev">
                                             <span className="carousel-control-prev-icon" aria-hidden="true"></span>
                                             <span className="visually-hidden">Previous</span>
                                         </button>
-                                        <button
-                                            className="carousel-control-next"
-                                            type="button"
-                                            data-bs-target="#transport-carousel"
-                                            data-bs-slide="next"
-                                        >
+                                        <button className="carousel-control-next" type="button" data-bs-target="#transport-carousel" data-bs-slide="next">
                                             <span className="carousel-control-next-icon" aria-hidden="true"></span>
                                             <span className="visually-hidden">Next</span>
                                         </button>
