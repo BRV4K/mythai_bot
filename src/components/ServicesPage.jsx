@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import getServices from '../../api/getServices.js';
 import * as bootstrap from 'bootstrap';
@@ -10,11 +10,12 @@ export default function ServicesPage() {
     const [selectedService, setSelectedService] = useState(null);
     const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false); // Новое состояние для модального окна с подробностями
-
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [imageLoading, setImageLoading] = useState({}); // Состояние для загрузки изображений
+    const [imageErrors, setImageErrors] = useState({}); // Состояние для ошибок загрузки изображений
     const modalRef = useRef(null);
     const addressModalRef = useRef(null);
-    const detailsModalRef = useRef(null); // Новый ref для модального окна с подробностями
+    const detailsModalRef = useRef(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -30,7 +31,6 @@ export default function ServicesPage() {
         fetchData();
     }, []);
 
-    // Логика открытия и закрытия первого модального окна
     useEffect(() => {
         if (modalRef.current) {
             const modal = new bootstrap.Modal(modalRef.current, {
@@ -51,7 +51,6 @@ export default function ServicesPage() {
         }
     }, [isServiceModalOpen]);
 
-    // Логика открытия и закрытия второго модального окна
     useEffect(() => {
         if (addressModalRef.current) {
             const addressModal = new bootstrap.Modal(addressModalRef.current, {
@@ -72,7 +71,6 @@ export default function ServicesPage() {
         }
     }, [isAddressModalOpen]);
 
-    // Логика открытия и закрытия третьего модального окна (подробности)
     useEffect(() => {
         if (detailsModalRef.current) {
             const detailsModal = new bootstrap.Modal(detailsModalRef.current, {
@@ -101,7 +99,7 @@ export default function ServicesPage() {
     const handleCloseServiceModal = () => {
         setIsServiceModalOpen(false);
         setIsAddressModalOpen(false);
-        setIsDetailsModalOpen(false); // Закрываем и третье модальное окно
+        setIsDetailsModalOpen(false);
         setSelectedService(null);
     };
 
@@ -175,59 +173,13 @@ export default function ServicesPage() {
             : window.open(url, '_blank');
     };
 
+    // Фильтрация данных (если нужно, можно добавить логику фильтрации)
+    const filteredData = data; // Здесь можно добавить фильтры, если они нужны
+
     return (
         <>
-            <style>
-                {`
-                    .modal {
-                        display: none;
-                    }
-                    .modal.show {
-                        display: block;
-                    }
-                    .blurred {
-                        filter: blur(5px);
-                    }
-                    #addressModal {
-                        z-index: 1060;
-                    }
-                    #addressModal:not(.show) {
-                        display: none !important;
-                        pointer-events: none;
-                    }
-                    #serviceModal:not(.show) {
-                        display: none !important;
-                        pointer-events: none;
-                    }
-                    #detailsModal {
-                        z-index: 1070; /* Выше #addressModal */
-                    }
-                    #detailsModal:not(.show) {
-                        display: none !important;
-                        pointer-events: none;
-                    }
-                    #serviceModal .modal-content {
-                        pointer-events: ${isAddressModalOpen || isDetailsModalOpen ? 'none' : 'auto'};
-                    }
-                    #serviceModal.blurred .modal-content {
-                        filter: blur(5px);
-                    }
-                    .modal-backdrop {
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100vw;
-                        height: 100vh;
-                        background-color: rgba(0, 0, 0, 0.5);
-                        z-index: 1050; /* Под модальными окнами */
-                    }
-                `}
-            </style>
-
-            {/* Кастомный backdrop для затемнения */}
             {(isServiceModalOpen || isAddressModalOpen || isDetailsModalOpen) && <div className="modal-backdrop fade show" />}
 
-            {/* Основной контейнер страницы */}
             <div className={`background-container ${isServiceModalOpen || isAddressModalOpen || isDetailsModalOpen ? 'blurred' : ''}`}>
                 <div className="background-services h-100 w-100 position-absolute"></div>
                 <div className="text-decoration-none text-center fw-semibold header-cont w-100 d-flex flex-column align-items-center justify-content-center">
@@ -237,15 +189,19 @@ export default function ServicesPage() {
                     <div className="d-flex w-100 justify-content-center align-items-center flex-column gap-5 buttons-cont">
                         {isLoading ? (
                             <div className="w-100 h-100 d-flex justify-content-center align-items-center">
-                                Загрузка
+                                <div className="spinner"></div>
                             </div>
                         ) : error ? (
                             <div className="w-100 h-100 d-flex justify-content-center align-items-center text-danger">
                                 Ошибка: {error}
                             </div>
+                        ) : filteredData.length === 0 ? (
+                            <div className="no-variants">
+                                НЕТ ПОДХОДЯЩИХ ВАРИАНТОВ
+                            </div>
                         ) : (
                             <div className="catalog-cards-cont">
-                                {data.map((service, key) => {
+                                {filteredData.map((service, key) => {
                                     const imgUrl = service['Фото 1'];
                                     const name = service['Название'];
 
@@ -256,11 +212,20 @@ export default function ServicesPage() {
                                             onClick={() => handleCardClick(service)}
                                         >
                                             <div className="catalog-img-cont d-flex align-items-center w-100">
-                                                <img
-                                                    src={`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${imgUrl}`}
-                                                    className="object-fit-cover w-100"
-                                                    alt={name}
-                                                />
+                                                {imageLoading[imgUrl] !== false && !imageErrors[imgUrl] ? (
+                                                    <div className="image-spinner"></div>
+                                                ) : imageErrors[imgUrl] ? null : (
+                                                    <img
+                                                        src={`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${imgUrl}`}
+                                                        className="object-fit-cover w-100"
+                                                        alt={name}
+                                                        onLoad={() => setImageLoading((prev) => ({ ...prev, [imgUrl]: false }))}
+                                                        onError={() => {
+                                                            setImageLoading((prev) => ({ ...prev, [imgUrl]: false }));
+                                                            setImageErrors((prev) => ({ ...prev, [imgUrl]: true }));
+                                                        }}
+                                                    />
+                                                )}
                                             </div>
                                             <p className="text-white m-0 p-0 services-name text-center p-2">{name}</p>
                                         </div>
@@ -277,7 +242,6 @@ export default function ServicesPage() {
                 </div>
             </div>
 
-            {/* Первое модальное окно (для сервиса) */}
             <div
                 className={`modal fade ${isServiceModalOpen ? 'show' : ''} ${isAddressModalOpen || isDetailsModalOpen ? 'blurred' : ''}`}
                 id="serviceModal"
@@ -295,16 +259,25 @@ export default function ServicesPage() {
                                         <div className="carousel-inner">
                                             {getPhotos(selectedService).map((photo, index) => (
                                                 <div className={`carousel-item ${index === 0 ? 'active' : ''}`} key={index}>
-                                                    <img
-                                                        src={`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${photo}`}
-                                                        className="d-block w-100 carousel-image"
-                                                        alt={`Фото ${index + 1}`}
-                                                        onClick={() =>
-                                                            handleImageClick(
-                                                                `${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${photo}`
-                                                            )
-                                                        }
-                                                    />
+                                                    {imageLoading[photo] !== false && !imageErrors[photo] ? (
+                                                        <div className="image-spinner"></div>
+                                                    ) : imageErrors[photo] ? null : (
+                                                        <img
+                                                            src={`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${photo}`}
+                                                            className="d-block w-100 carousel-image"
+                                                            alt={`Фото ${index + 1}`}
+                                                            onClick={() =>
+                                                                handleImageClick(
+                                                                    `${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${photo}`
+                                                                )
+                                                            }
+                                                            onLoad={() => setImageLoading((prev) => ({ ...prev, [photo]: false }))}
+                                                            onError={() => {
+                                                                setImageLoading((prev) => ({ ...prev, [photo]: false }));
+                                                                setImageErrors((prev) => ({ ...prev, [photo]: true }));
+                                                            }}
+                                                        />
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
@@ -374,7 +347,6 @@ export default function ServicesPage() {
                 </div>
             </div>
 
-            {/* Второе модальное окно (для адреса) */}
             <div
                 className={`modal fade ${isAddressModalOpen ? 'show' : ''}`}
                 id="addressModal"
@@ -419,7 +391,6 @@ export default function ServicesPage() {
                 </div>
             </div>
 
-            {/* Третье модальное окно (для подробного описания) */}
             <div
                 className={`modal fade ${isDetailsModalOpen ? 'show' : ''}`}
                 id="detailsModal"

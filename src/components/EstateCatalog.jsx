@@ -5,11 +5,54 @@ import { useSelector } from "react-redux";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import * as bootstrap from 'bootstrap';
 
+// Добавим стили для спиннера
+const styles = `
+  .spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid #fff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+  }
+
+  .image-spinner {
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid #fff;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .no-variants {
+    color: #fff;
+    font-size: 1.2rem;
+    text-align: center;
+    margin-top: 20px;
+  }
+`;
+
+// Добавим стиль в документ
+const styleSheet = document.createElement("style");
+styleSheet.type = "text/css";
+styleSheet.innerText = styles;
+document.head.appendChild(styleSheet);
+
 export default function EstateCatalog() {
     const [data, setData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedEstate, setSelectedEstate] = useState(null);
+    const [imageLoading, setImageLoading] = useState({}); // Состояние для загрузки изображений
+    const [imageErrors, setImageErrors] = useState({}); // Состояние для ошибок загрузки изображений
     const modalRef = useRef(null);
 
     const district = useSelector((state) => state.Storage.storage.district || 'Неизвестный район');
@@ -119,6 +162,14 @@ export default function EstateCatalog() {
         document.body.appendChild(fullscreenDiv);
     };
 
+    // Функция для фильтрации данных
+    const filteredData = data.filter((estate) => {
+        const apiDistrict = estate['Район'];
+        const apiEstateType = estate['Тип недвижимости'];
+        const apiTransactionType = estate['Тип сделки'];
+        return district === apiDistrict && estateType === apiEstateType && renameTransaction[orderType] === apiTransactionType;
+    });
+
     return (
         <>
             <div className={`background-container ${selectedEstate ? 'blurred' : ''}`}>
@@ -131,15 +182,20 @@ export default function EstateCatalog() {
                         <p className="catalog-header-2 m-0">В {district.toUpperCase()}</p>
                     </div>
                     {isLoading ? (
-                        <div className="w-100 h-100 d-flex justify-content-center align-items-center">Загрузка</div>
+                        <div className="w-100 h-100 d-flex justify-content-center align-items-center">
+                            <div className="spinner"></div>
+                        </div>
+                    ) : error ? (
+                        <div className="w-100 h-100 d-flex justify-content-center align-items-center text-white">
+                            Ошибка: {error}
+                        </div>
+                    ) : filteredData.length === 0 ? (
+                        <div className="no-variants">
+                            НЕТ ПОДХОДЯЩИХ ВАРИАНТОВ
+                        </div>
                     ) : (
                         <div className="catalog-cards-cont">
-                            {data.map((estate, key) => {
-                                const apiDistrict = estate['Район'];
-                                const apiEstateType = estate['Тип недвижимости'];
-                                const apiTransactionType = estate['Тип сделки'];
-                                if (district !== apiDistrict || estateType !== apiEstateType || renameTransaction[orderType] !== apiTransactionType) return null;
-
+                            {filteredData.map((estate, key) => {
                                 const imgUrl = estate['Фото 1'];
                                 const name = estate['Название'];
                                 const price = estate['Цена'];
@@ -151,11 +207,20 @@ export default function EstateCatalog() {
                                         className="catalog-card cursor-pointer"
                                     >
                                         <div className="catalog-img-cont d-flex align-items-center w-100">
-                                            <img
-                                                src={`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${imgUrl}`}
-                                                className="object-fit-cover w-100"
-                                                alt={name}
-                                            />
+                                            {imageLoading[imgUrl] !== false && !imageErrors[imgUrl] ? (
+                                                <div className="image-spinner"></div>
+                                            ) : imageErrors[imgUrl] ? null : (
+                                                <img
+                                                    src={`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${imgUrl}`}
+                                                    className="object-fit-cover w-100"
+                                                    alt={name}
+                                                    onLoad={() => setImageLoading((prev) => ({ ...prev, [imgUrl]: false }))}
+                                                    onError={() => {
+                                                        setImageLoading((prev) => ({ ...prev, [imgUrl]: false }));
+                                                        setImageErrors((prev) => ({ ...prev, [imgUrl]: true }));
+                                                    }}
+                                                />
+                                            )}
                                         </div>
                                         <div className="w-100 px-2 py-1">
                                             <div className={`catalog-name-container ${name.length > 15 ? 'has-long-name' : ''}`}>
@@ -199,12 +264,21 @@ export default function EstateCatalog() {
                                         <div className="carousel-inner">
                                             {getPhotos(selectedEstate).map((photo, index) => (
                                                 <div className={`carousel-item ${index === 0 ? 'active' : ''}`} key={index}>
-                                                    <img
-                                                        src={`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${photo}`}
-                                                        className="d-block w-100 carousel-image"
-                                                        alt={`Фото ${index + 1}`}
-                                                        onClick={() => handleImageClick(`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${photo}`)}
-                                                    />
+                                                    {imageLoading[photo] !== false && !imageErrors[photo] ? (
+                                                        <div className="image-spinner"></div>
+                                                    ) : imageErrors[photo] ? null : (
+                                                        <img
+                                                            src={`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${photo}`}
+                                                            className="d-block w-100 carousel-image"
+                                                            alt={`Фото ${index + 1}`}
+                                                            onClick={() => handleImageClick(`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${photo}`)}
+                                                            onLoad={() => setImageLoading((prev) => ({ ...prev, [photo]: false }))}
+                                                            onError={() => {
+                                                                setImageLoading((prev) => ({ ...prev, [photo]: false }));
+                                                                setImageErrors((prev) => ({ ...prev, [photo]: true }));
+                                                            }}
+                                                        />
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>

@@ -1,8 +1,18 @@
 import React from 'react';
-import {Link, useNavigate} from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function HomePage() {
     const navigate = useNavigate();
+
+    // Обработчик клика для открытия чата
+    const handleChatClick = () => {
+        const chatUrl = import.meta.env.VITE_CHAT_URL;
+        if (chatUrl) {
+            window.open(chatUrl, '_blank'); // Открываем ссылку в новой вкладке
+        } else {
+            console.error('Ошибка: VITE_CHAT_URL не указан в переменных окружения');
+        }
+    };
 
     return (
         <>
@@ -51,7 +61,10 @@ export default function HomePage() {
                             <div className='main-btn w-100 h-100 position-absolute bottom-0'></div>
                             <p className='button-text text-white m-0 p-0 lh-1 position-absolute'>ОБМЕН ВАЛЮТЫ</p>
                         </Link>
-                        <div className='position-relative main-btn-cont'>
+                        <div
+                            className='position-relative main-btn-cont'
+                            onClick={handleChatClick} // Добавляем обработчик клика
+                        >
                             <img src='/img/chat_button.png' className='w-100 h-100'/>
                             <div className='main-btn w-100 h-100 position-absolute bottom-0'></div>
                             <p className='button-text text-white m-0 p-0 lh-1 position-absolute'>ОБЩИЙ ЧАТ</p>

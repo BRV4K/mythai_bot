@@ -12,6 +12,8 @@ export default function TransportCatalog() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedTransport, setSelectedTransport] = useState(null);
+    const [imageLoading, setImageLoading] = useState({}); // Состояние для загрузки изображений
+    const [imageErrors, setImageErrors] = useState({}); // Состояние для ошибок загрузки изображений
     const modalRef = useRef(null);
 
     const orderType = useSelector((state) => state.Storage.storage.orderType || 'Неизвестно');
@@ -28,10 +30,8 @@ export default function TransportCatalog() {
                 } else if (transportType === 'Байк') {
                     response = await getBikes();
                 }
-                // Логируем структуру данных для отладки
                 console.log('API Response:', response);
 
-                // Предполагаем, что массив находится в свойстве 'data' или 'results' (проверьте ваш API)
                 const transportData = Array.isArray(response) ? response : (response.data || response.results || []);
                 setData(transportData);
             } catch (err) {
@@ -125,6 +125,12 @@ export default function TransportCatalog() {
         document.body.appendChild(fullscreenDiv);
     };
 
+    // Фильтрация данных
+    const filteredData = data.filter((transport) => {
+        const apiOrderType = transport['Тип сделки'];
+        return apiOrderType === renameTransaction[orderType];
+    });
+
     return (
         <>
             <div className={`background-container ${selectedTransport ? 'blurred' : ''}`}>
@@ -134,47 +140,53 @@ export default function TransportCatalog() {
                         <p className="catalog-header-1 mb-1 mt-2">{orderType.toUpperCase()} {transportType.toUpperCase()}</p>
                     </div>
                     {isLoading ? (
-                        <div className="w-100 h-100 d-flex justify-content-center align-items-center">Загрузка</div>
+                        <div className="w-100 h-100 d-flex justify-content-center align-items-center">
+                            <div className="spinner"></div>
+                        </div>
                     ) : error ? (
                         <div className="w-100 h-100 d-flex justify-content-center align-items-center text-danger">{error}</div>
+                    ) : filteredData.length === 0 ? (
+                        <div className="no-variants">
+                            НЕТ ПОДХОДЯЩИХ ВАРИАНТОВ
+                        </div>
                     ) : (
                         <div className="catalog-cards-cont">
-                            {Array.isArray(data) ? (
-                                data.map((transport, key) => {
-                                    const apiOrderType = transport['Тип сделки'];
-                                    if (apiOrderType !== renameTransaction[orderType]) return null;
+                            {filteredData.map((transport, key) => {
+                                const imgUrl = transport['Фото 1'];
+                                const name = transport['Название'];
+                                const price = transport['Цена'];
 
-                                    const imgUrl = transport['Фото 1'];
-                                    const name = transport['Название'];
-                                    const price = transport['Цена'];
-
-                                    return (
-                                        <div
-                                            key={key}
-                                            onClick={() => handleCardClick(transport)}
-                                            className="catalog-card cursor-pointer"
-                                        >
-                                            <div className="catalog-img-cont d-flex align-items-center w-100">
+                                return (
+                                    <div
+                                        key={key}
+                                        onClick={() => handleCardClick(transport)}
+                                        className="catalog-card cursor-pointer"
+                                    >
+                                        <div className="catalog-img-cont d-flex align-items-center w-100">
+                                            {imageLoading[imgUrl] !== false && !imageErrors[imgUrl] ? (
+                                                <div className="image-spinner"></div>
+                                            ) : imageErrors[imgUrl] ? null : (
                                                 <img
                                                     src={`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${imgUrl}`}
                                                     className="object-fit-cover w-100"
                                                     alt={name}
+                                                    onLoad={() => setImageLoading((prev) => ({ ...prev, [imgUrl]: false }))}
+                                                    onError={() => {
+                                                        setImageLoading((prev) => ({ ...prev, [imgUrl]: false }));
+                                                        setImageErrors((prev) => ({ ...prev, [imgUrl]: true }));
+                                                    }}
                                                 />
-                                            </div>
-                                            <div className="w-100 px-2 py-1">
-                                                <div className={`catalog-name-container ${name.length > 15 ? 'has-long-name' : ''}`}>
-                                                    <p className="catalog-name text-white m-0 p-0">{name}</p>
-                                                </div>
-                                                <p className="catalog-price d-flex align-items-center justify-content-end m-0 pb-1">{price}</p>
-                                            </div>
+                                            )}
                                         </div>
-                                    );
-                                })
-                            ) : (
-                                <div className="w-100 h-100 d-flex justify-content-center align-items-center text-danger">
-                                    Непредвиденная ошибка
-                                </div>
-                            )}
+                                        <div className="w-100 px-2 py-1">
+                                            <div className={`catalog-name-container ${name.length > 15 ? 'has-long-name' : ''}`}>
+                                                <p className="catalog-name text-white m-0 p-0">{name}</p>
+                                            </div>
+                                            <p className="catalog-price d-flex align-items-center justify-content-end m-0 pb-1">{price}</p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -208,12 +220,21 @@ export default function TransportCatalog() {
                                         <div className="carousel-inner">
                                             {getPhotos(selectedTransport).map((photo, index) => (
                                                 <div className={`carousel-item ${index === 0 ? 'active' : ''}`} key={index}>
-                                                    <img
-                                                        src={`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${photo}`}
-                                                        className="d-block w-100 carousel-image"
-                                                        alt={`Фото ${index + 1}`}
-                                                        onClick={() => handleImageClick(`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${photo}`)}
-                                                    />
+                                                    {imageLoading[photo] !== false && !imageErrors[photo] ? (
+                                                        <div className="image-spinner"></div>
+                                                    ) : imageErrors[photo] ? null : (
+                                                        <img
+                                                            src={`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${photo}`}
+                                                            className="d-block w-100 carousel-image"
+                                                            alt={`Фото ${index + 1}`}
+                                                            onClick={() => handleImageClick(`${import.meta.env.VITE_PROXY_URL}/yandex-proxy?url=https://getfile.dokpub.com/yandex/get/${photo}`)}
+                                                            onLoad={() => setImageLoading((prev) => ({ ...prev, [photo]: false }))}
+                                                            onError={() => {
+                                                                setImageLoading((prev) => ({ ...prev, [photo]: false }));
+                                                                setImageErrors((prev) => ({ ...prev, [photo]: true }));
+                                                            }}
+                                                        />
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
