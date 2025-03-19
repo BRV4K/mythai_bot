@@ -40,6 +40,12 @@ body {
   z-index: -2;
 }
 
+.background-map {
+  background-image: url("../public/img/map_bg-min.jpg");
+  background-size: cover;
+  z-index: -2;
+}
+
 .background-visa {
   background-image: url("../public/img/visa_bg-min.png");
   background-size: 100% 100%;

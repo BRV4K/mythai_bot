@@ -34,6 +34,8 @@ export default function EstateCatalog() {
         if (apiDistrict === 'пасак') apiDistrict = 'чалонг';
         if (apiDistrict === 'сиринабон') apiDistrict = 'чалонг';
         if (apiDistrict === 'таланг') apiDistrict = 'тхепкассатри';
+        if (apiDistrict === 'олд таун') apiDistrict = 'вичит';
+        if (apiDistrict === 'най харн') apiDistrict = 'раваи';
         let apiEstateType = estate['Тип недвижимости'];
         if (apiEstateType === 'Апартаменты') apiEstateType = 'Квартира';
         const apiTransactionType = estate['Тип сделки'];

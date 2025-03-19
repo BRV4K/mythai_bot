@@ -10,8 +10,13 @@ export default function DisctrictChange() {
 
     return (
         <>
-            <div className={`background-estate h-100 w-100 position-absolute`}></div>
-            <div className='app-container w-100 h-100 d-flex justify-content-center align-items-center z-1'>
+            <div className={`background-map h-100 w-100 position-absolute`}></div>
+            <div className='app-container w-100 h-100 d-flex flex-column justify-content-start align-items-center z-1'>
+                <div className="text-decoration-none text-center fw-semibold header-cont w-100 d-flex flex-column align-items-center justify-content-center">
+                    <p className="catalog-header-1 mb-1 mt-2">
+                        ВЫБЕРИТЕ РАЙОН
+                    </p>
+                </div>
                 <div>
                     <Map />
                 </div>
