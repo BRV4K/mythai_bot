@@ -1,7 +1,7 @@
 import { parse } from 'csv-parse/browser/esm';
 import axios from 'axios';
 
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/10i9gtn0mTkkVtgHqrUaloHRyHchUciJQwwpOGS8o8j4/export?format=csv&gid=0";
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/10i9gtn0mTkkVtgHqrUaloHRyHchUciJQwwpOGS8o8j4/export?format=csv&gid=2004920741";
 
 async function readPublicSheet() {
     try {
@@ -23,7 +23,7 @@ async function readPublicSheet() {
     }
 }
 
-export default async function getEstate() {
+export default async function getBikes() {
     try {
         const courses = await readPublicSheet();
         // Тестовый вывод данных в консоль
@@ -34,3 +34,4 @@ export default async function getEstate() {
         return [];
     }
 }
+
